@@ -1,0 +1,5 @@
+<launch>
+<!-- Re-publishing simulator/camera_node/image/compressed topic to /image_raw as expected by Autoware -->
+  <node name="republish" type="republish" pkg="image_transport" output="screen" args="compressed in:=/simulator/camera_node/image raw out:=/simulator/camera_node/image2" />
+
+</launch>
