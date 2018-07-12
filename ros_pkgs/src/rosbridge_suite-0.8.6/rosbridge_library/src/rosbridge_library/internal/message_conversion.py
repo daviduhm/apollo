@@ -75,7 +75,7 @@ ros_time_types = ["time", "duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
                        "uint16", "int32", "uint32", "int64", "uint64",
                        "float32", "float64", "string"]
-ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
+ros_header_types = ["std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_braces = re.compile(r'\[[^\]]*\]')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
@@ -277,9 +277,14 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     # Substitute the correct time if we're an std_msgs/Header
     if rostype in ros_header_types:
         inst.stamp = rospy.get_rostime()
-
-    inst_fields = dict(zip(inst.__slots__, inst._slot_types))
-
+    
+    if roottype.startswith('pb_msgs'):
+        slots = [field.name for field in inst.DESCRIPTOR.fields]
+        slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in inst.DESCRIPTOR.fields]
+        inst_fields = dict(zip(slots, slot_types))
+    else:
+        inst_fields = dict(zip(inst.__slots__, inst._slot_types))
+    
     for field_name in msg:
         # Add this field to the field stack
         field_stack = stack + [field_name]
@@ -293,6 +298,9 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
 
         field_value = _to_inst(msg[field_name], field_rostype,
                     roottype, field_inst, field_stack)
+    
+        if roottype.startswith('pb_msgs') and field_rostype not in ros_primitive_types:
+            continue
 
         setattr(inst, field_name, field_value)
 

@@ -192,7 +192,16 @@ def _load_class(modname, subname, classname):
         raise InvalidModuleException(modname, subname, exc)
 
     try:
-        return getattr(getattr(pypkg, subname), classname)
+        if modname == 'pb_msgs':
+            pypkg = __import__('%s.%s' % (modname, subname))
+            msg_class = getattr(getattr(pypkg, subname), classname)
+            msg_class._type = '{}/{}'.format(modname, classname)
+            fields = [field.name for field in msg_class.DESCRIPTOR.fields]
+            for field in fields:
+                setattr(msg_class, field, None)
+            return msg_class
+        else:
+            return getattr(getattr(pypkg, subname), classname)
     except Exception as exc:
         raise InvalidClassException(modname, subname, classname, exc)
 
