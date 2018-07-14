@@ -123,10 +123,10 @@ def extract_values(inst):
     return _from_inst(inst, rostype)
 
 
-def populate_instance(msg, inst):
+def populate_instance(msg, inst, typestring):
     """ Returns an instance of the provided class, with its fields populated
     according to the values in msg """
-    return _to_inst(msg, inst._type, inst._type, inst)
+    return _to_inst(msg, typestring, typestring, inst)
 
 
 def _from_inst(inst, rostype):
@@ -279,8 +279,9 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         inst.stamp = rospy.get_rostime()
     
     if roottype.startswith('pb_msgs'):
-        slots = [field.name for field in inst.DESCRIPTOR.fields]
-        slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in inst.DESCRIPTOR.fields]
+        fields = inst.DESCRIPTOR.fields
+        slots = [field.name for field in fields]
+        slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in fields]
         inst_fields = dict(zip(slots, slot_types))
     else:
         inst_fields = dict(zip(inst.__slots__, inst._slot_types))
