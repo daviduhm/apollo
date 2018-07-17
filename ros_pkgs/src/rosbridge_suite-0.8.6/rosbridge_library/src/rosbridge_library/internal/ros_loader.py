@@ -179,20 +179,6 @@ def _load_class(modname, subname, classname):
     Returns the loaded module, or None on failure """
     global loaded_modules
 
-    # if modname == 'pb_msgs':
-    #     pypkg = __import__('%s.%s' % (modname, subname))
-    #     subpkg = getattr(pypkg, subname)
-    #     msg_class = getattr(subpkg, classname)
-    #     # setattr(msg_class, '_type', '{}/{}'.format(modname, classname))
-    #     print(modname, subname, classname)
-    #     print(pypkg, subpkg, msg_class)
-    #     print(dir(msg_class))
-    #     msg_class._type = '{}/{}'.format(modname, classname)
-    #     fields = [field.name for field in msg_class.DESCRIPTOR.fields]
-    #     for field in fields:
-    #         setattr(msg_class, field, None)
-    #     return msg_class
-
     try:
         with _manifest_lock:
             # roslib maintains a cache of loaded manifests, so no need to duplicate
