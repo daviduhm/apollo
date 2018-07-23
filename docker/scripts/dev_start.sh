@@ -258,6 +258,7 @@ function main(){
 
     info "Starting docker container \"apollo_dev\" ..."
     docker run -it \
+	    --runtime nvidia \
         -d \
         --privileged \
         --name apollo_dev \
