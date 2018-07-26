@@ -11,7 +11,7 @@ class ImageConverter
 	ros::NodeHandle nh_;
 	image_transport::ImageTransport it_;
 	image_transport::Subscriber image_sub_;
-	image_transport::Publisher image_pub_;
+	image_transport::Publisher image_pub_front_, image_pub_short_, image_pub_long_;
 	ros::Subscriber compressed_sub_;
 
 public:
@@ -19,7 +19,9 @@ public:
 		: it_(nh_)
 	{
 		image_sub_ = it_.subscribe("/simulator/camera_node/image2", 1, &ImageConverter::ImageCallback, this);
-		image_pub_ = it_.advertise("/apollo/sensor/camera/traffic/image_short", 1);
+		image_pub_front_ = it_.advertise("/apollo/sensor/camera/obstacle/front_6mm", 1);
+		image_pub_short_ = it_.advertise("/apollo/sensor/camera/traffic/image_short", 1);
+		image_pub_long_ = it_.advertise("/apollo/sensor/camera/traffic/image_long", 1);				
 		compressed_sub_ = nh_.subscribe("/simulator/camera_node/image/compressed", 1, &ImageConverter::CompressedImageCallback, this);
 	}
 
@@ -76,7 +78,9 @@ public:
 
 			}
 		}
-		image_pub_.publish(raw_yuyv_msg);
+		image_pub_front_.publish(raw_yuyv_msg);
+		image_pub_short_.publish(raw_yuyv_msg);
+		image_pub_long_.publish(raw_yuyv_msg);
 	}
 
 	void ImageCallback(const sensor_msgs::ImageConstPtr &msg){
@@ -117,7 +121,10 @@ public:
 			}
 		} 
 
-		image_pub_.publish(yuyv_msg);
+		image_pub_front_.publish(yuyv_msg);
+		image_pub_short_.publish(yuyv_msg);
+		image_pub_long_.publish(yuyv_msg);
+
 	}
 
 };
