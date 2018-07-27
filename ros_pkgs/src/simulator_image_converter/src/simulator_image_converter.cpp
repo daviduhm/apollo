@@ -71,10 +71,12 @@ public:
 				u = (u0 + u1)/2 + 128;
 				v = (v0 + v1)/2 + 128;
 
+				// sqap to y u y v if avx2
+				raw_yuyv_msg.data.push_back(clamp(u));
 				raw_yuyv_msg.data.push_back(clamp(y0));
-				raw_yuyv_msg.data.push_back(clamp(u));			
+				raw_yuyv_msg.data.push_back(clamp(v));							
 				raw_yuyv_msg.data.push_back(clamp(y1));
-				raw_yuyv_msg.data.push_back(clamp(v));
+
 
 			}
 		}
