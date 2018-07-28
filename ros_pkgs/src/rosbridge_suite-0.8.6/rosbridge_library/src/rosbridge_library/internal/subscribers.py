@@ -82,9 +82,10 @@ class MultiSubscriber():
         msg_class = ros_loader.get_message_class(msg_type)
 
         # Make sure the specified msg type and established msg type are same
-        modname, _ = ros_loader._splittype(topic_type)
-        if modname != 'pb_msgs' and topic_type is not None and topic_type != _type:
-            raise TypeConflictException(topic, topic_type, _type)
+        if topic_type is not None:
+            modname, _ = ros_loader._splittype(topic_type)
+            if modname != 'pb_msgs' and topic_type != _type:
+                raise TypeConflictException(topic, topic_type, _type)
 
         # Create the subscriber and associated member variables
         self.subscriptions = {}

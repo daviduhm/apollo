@@ -157,9 +157,10 @@ class MultiPublisher():
         msg_class = ros_loader.get_message_class(msg_type)
 
         # Make sure the specified msg type and established msg type are same
-        modname, _ = ros_loader._splittype(topic_type)
-        if modname != 'pb_msgs' and topic_type is not None and topic_type != msg_class._type:
-            raise TypeConflictException(topic, topic_type, msg_class._type)
+        if topic_type is not None:
+            modname = ros_loader._splittype(topic_type)[0]
+            if modname != 'pb_msgs' and topic_type != msg_class._type:
+                raise TypeConflictException(topic, topic_type, msg_class._type)
         
         # Create the publisher and associated member variables
         self.clients = {}
