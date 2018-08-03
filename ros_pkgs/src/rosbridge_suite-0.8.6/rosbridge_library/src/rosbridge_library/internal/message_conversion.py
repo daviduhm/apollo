@@ -235,8 +235,8 @@ def _to_time_inst(msg, rostype, inst=None):
     # Copy across the fields
     for field in ["secs", "nsecs"]:
         try:
-            if field in msg:
-                setattr(inst, field, msg[field])
+            if field in msg["data"]:
+                setattr(inst, field, msg["data"][field])
         except TypeError:
             continue
 
@@ -275,8 +275,8 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
-    if rostype in ros_header_types:
-        inst.stamp = rospy.get_rostime()
+    #if rostype in ros_header_types:
+    #    inst.stamp = rospy.get_rostime()
     
     if roottype.startswith('pb_msgs'):
         fields = inst.DESCRIPTOR.fields
