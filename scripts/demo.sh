@@ -9,14 +9,13 @@ function localization(){
 	source "${APOLLO_ROOT_DIR}/ros_pkgs/devel/setup.bash"
 	if [ $? -eq 0 ]; then
     	echo "Starting rosbridge..."
-    	roslaunch rosbridge_server rosbridge_websocket.launch &
+    	roslaunch rosbridge_server rosbridge_websocket.launch >/dev/null 2>&1 &
 	else
     	error "Failed to source ros_pkgs. Has it been built?"
 	fi
-	bash "${APOLLO_ROOT_DIR}/scripts/bootstrap.sh"
 	bash "${APOLLO_ROOT_DIR}/scripts/localization.sh"
 	bash "${APOLLO_ROOT_DIR}/scripts/localization_online_visualizer.sh"
-	echo "Launched localization. Please start the simulator and ensure that the lidar and GPS are switched on."
+	# echo "Launched localization. Please start the simulator and ensure that the lidar and GPS are switched on."
 }
 
 function perception(){
@@ -24,7 +23,7 @@ function perception(){
 	source "${APOLLO_ROOT_DIR}/ros_pkgs/devel/setup.bash"
 	if [ $? -eq 0 ]; then
     	echo "Starting rosbridge..."
-    	roslaunch rosbridge_server rosbridge_websocket.launch &
+    	roslaunch rosbridge_server rosbridge_websocket.launch >/dev/null 2>&1 &
     	echo "Starting image converter..."
     	rosrun simulator_image_converter simulator_image_converter &
 	else
