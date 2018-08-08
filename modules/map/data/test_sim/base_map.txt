@@ -1,0 +1,16 @@
+header {
+  version: "1.500000"
+  date: "2018-03-23T13:27:54"
+  projection {
+    proj: "+proj=utm +zone=10 +ellps=WGS84 +datum=WGS84 +units=m +no_defs"
+  }
+  district: "0"
+  rev_major: "1"
+  rev_minor: "0"
+  left: -121.982277
+  top: 37.409527
+  right: -121.971998
+  bottom: 37.398079
+  vendor: "Baidu"
+}
+
