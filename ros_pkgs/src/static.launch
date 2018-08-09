@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="tf" type="static_transform_publisher" name="novatel_to_velodyne64" args="0 0 0 0 0 0 novatel velodyne64 100"/>
+</launch>
