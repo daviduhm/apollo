@@ -13,4 +13,690 @@ header {
   bottom: 37.398079
   vendor: "Baidu"
 }
-
+signal {
+  id {
+    id: "2505"
+  }
+  boundary {
+    point {
+      x: 590578
+      y: 4140312
+      z: 16
+    }
+    point {
+      x: 590578
+      y: 4140312.7
+      z: 16
+    }
+    point {
+      x: 590578
+      y: 4140312.7
+      z: 18
+    }
+    point {
+      x: 590578
+      y: 4140312
+      z: 18
+    }
+  }
+  subsignal {
+    id {
+      id: "0"
+    }
+    type: CIRCLE
+    location {
+      x: 590578
+      y: 4140312.4
+      z: 16.5
+    }
+  }
+  subsignal {
+    id {
+      id: "1"
+    }
+    type: CIRCLE
+    location {
+      x: 590578
+      y: 4140312.4
+      z: 17
+    }
+  }
+  subsignal {
+    id {
+      id: "2"
+    }
+    type: CIRCLE
+    location {
+      x: 590578
+      y: 4140312.4
+      z: 17.5
+    }
+  }
+  overlap_id {
+    id: "overlap_4817"
+  }
+  type: MIX_3_VERTICAL
+  stop_line {
+    segment {
+      line_segment {
+        point {
+          x: 590611
+          y: 4140308.24
+        }
+        point {
+          x: 590606
+          y: 4140312.24
+        }
+      }
+    }
+  }
+}
+lane {
+  id {
+    id: "2dap0_1_1"
+  }
+  central_curve {
+    segment {
+      line_segment {
+        point {
+          x: 590700
+          y: 4140310.24
+        }
+        point {
+          x: 590606
+          y: 4140310.24
+        }
+      }
+      s: 0
+      start_position {
+        x: 590700
+        y: 4140310.24
+      }
+      length: 94
+    }
+  }
+  left_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590700
+            y: 4140308.24
+          }
+          point {
+            x: 590611
+            y: 4140308.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590700
+          y: 4140308.24
+        }
+        length: 94
+      }
+    }
+    length: 94
+    virtual: false
+    boundary_type {
+      s: 0
+      types: DOUBLE_YELLOW
+    }
+  }
+  right_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590700
+            y: 4140312.24
+          }
+          point {
+            x: 590606
+            y: 4140312.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590700
+          y: 4140312.24
+        }
+        length: 94
+      }
+    }
+    length: 94
+    virtual: false
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  length: 94
+  speed_limit: 5
+  successor_id: {
+    id: "2dap0_1_2"
+  }
+  type: CITY_DRIVING
+  turn: NO_TURN
+  left_sample {
+    s: 0
+    width: 1.75889
+  }
+  left_sample {
+    s: 94
+    width: 1.75882
+  }
+  right_sample {
+    s: 0
+    width: 1.75889
+  }
+  right_sample {
+    s: 94
+    width: 1.75882
+  }
+  direction: FORWARD
+  left_road_sample {
+    s: 0
+    width: 3.6225
+  }
+  left_road_sample {
+    s: 94
+    width: 1.75882
+  }
+  right_road_sample {
+    s: 0
+    width: 4.13493
+  }
+  right_road_sample {
+    s: 94
+    width: 1.75882
+  }
+}
+lane {
+  id {
+    id: "2dap0_1_2"
+  }
+  central_curve {
+    segment {
+      line_segment {
+        point {
+          x: 590606
+          y: 4140310.24
+        }
+        point {
+          x: 590578
+          y: 4140310.24
+        }
+      }
+      s: 0
+      start_position {
+        x: 590606
+        y: 4140310.24
+      }
+      length: 28
+    }
+  }
+  left_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590606
+            y: 4140308.24
+          }
+          point {
+            x: 590578
+            y: 4140308.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590606
+          y: 4140308.24
+        }
+        length: 28
+      }
+    }
+    length: 28
+    virtual: true
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  right_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590606
+            y: 4140312.24
+          }
+          point {
+            x: 590578
+            y: 4140312.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590606
+          y: 4140312.24
+        }
+        length: 28
+      }
+    }
+    length: 28
+    virtual: true
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  length: 28
+  speed_limit: 5
+  overlap_id {
+    id: "overlap_1"
+  }
+  type: CITY_DRIVING
+  turn: NO_TURN
+  left_sample {
+    s: 0
+    width: 1.75889
+  }
+  left_sample {
+    s: 28
+    width: 1.75882
+  }
+  right_sample {
+    s: 0
+    width: 1.75889
+  }
+  right_sample {
+    s: 28
+    width: 1.75882
+  }
+  direction: FORWARD
+  left_road_sample {
+    s: 0
+    width: 3.6225
+  }
+  left_road_sample {
+    s: 28
+    width: 1.75882
+  }
+  right_road_sample {
+    s: 0
+    width: 4.13493
+  }
+  right_road_sample {
+    s: 28
+    width: 1.75882
+  }
+}
+overlap {
+  id {
+    id: "overlap_1"
+  }
+  object {
+    id {
+      id: "2dap0_1_2"
+    }
+    lane_overlap_info {
+      start_s: 0
+      end_s: 0.1
+      is_merge: false
+    }
+  }
+  object {
+    id {
+      id: "2505"
+    }
+    signal_overlap_info {
+    }
+  }
+}
+signal {
+  id {
+    id: "2506"
+  }
+  boundary {
+    point {
+      x: 590574
+      y: 4140315
+      z: 16
+    }
+    point {
+      x: 590574
+      y: 4140315.7
+      z: 16
+    }
+    point {
+      x: 590574
+      y: 4140315.7
+      z: 18
+    }
+    point {
+      x: 590574
+      y: 4140315
+      z: 18
+    }
+  }
+  subsignal {
+    id {
+      id: "0"
+    }
+    type: CIRCLE
+    location {
+      x: 590574
+      y: 4140315.4
+      z: 16.5
+    }
+  }
+  subsignal {
+    id {
+      id: "1"
+    }
+    type: CIRCLE
+    location {
+      x: 590574
+      y: 4140315.4
+      z: 17
+    }
+  }
+  subsignal {
+    id {
+      id: "2"
+    }
+    type: CIRCLE
+    location {
+      x: 590574
+      y: 4140315.4
+      z: 17.5
+    }
+  }
+  overlap_id {
+    id: "overlap_4818"
+  }
+  type: MIX_3_VERTICAL
+  stop_line {
+    segment {
+      line_segment {
+        point {
+          x: 590606
+          y: 4140312.24
+        }
+        point {
+          x: 590601
+          y: 4140316.24
+        }
+      }
+    }
+  }
+}
+lane {
+  id {
+    id: "2dap0_2_1"
+  }
+  central_curve {
+    segment {
+      line_segment {
+        point {
+          x: 590700
+          y: 4140314.24
+        }
+        point {
+          x: 590604
+          y: 4140314.24
+        }
+      }
+      s: 0
+      start_position {
+        x: 590700
+        y: 4140314.24
+      }
+      length: 96
+    }
+  }
+  left_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590700
+            y: 4140312.24
+          }
+          point {
+            x: 590606
+            y: 4140312.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590700
+          y: 4140312.22
+        }
+        length: 96
+      }
+    }
+    length: 96
+    virtual: false
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  right_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590700
+            y: 4140316.24
+          }
+          point {
+            x: 590601
+            y: 4140316.24
+          }
+        }
+        s: 0
+        start_position {
+          x: 590700
+          y: 4140316.24
+        }
+        length: 96
+      }
+    }
+    length: 96
+    virtual: false
+    boundary_type {
+      s: 0
+      types: SOLID_WHITE
+    }
+  }
+  length: 96
+  speed_limit: 5
+  successor_id: {
+    id: "2dap0_2_2"
+  }
+  type: CITY_DRIVING
+  turn: NO_TURN
+  left_sample {
+    s: 0
+    width: 1.75889
+  }
+  left_sample {
+    s: 96
+    width: 1.75882
+  }
+  right_sample {
+    s: 0
+    width: 1.75889
+  }
+  right_sample {
+    s: 96
+    width: 1.75882
+  }
+  direction: FORWARD
+  left_road_sample {
+    s: 0
+    width: 3.6225
+  }
+  left_road_sample {
+    s: 96
+    width: 1.75882
+  }
+  right_road_sample {
+    s: 0
+    width: 4.13493
+  }
+  right_road_sample {
+    s: 96
+    width: 1.75882
+  }
+}
+lane {
+  id {
+    id: "2dap0_2_2"
+  }
+  central_curve {
+    segment {
+      line_segment {
+        point {
+          x: 590604
+          y: 4140314
+        }
+        point {
+          x: 590574
+          y: 4140314
+        }
+      }
+      s: 0
+      start_position {
+        x: 590604
+        y: 4140314
+      }
+      length: 30
+    }
+  }
+  left_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590604
+            y: 4140313
+          }
+          point {
+            x: 590574
+            y: 4140313
+          }
+        }
+        s: 0
+        start_position {
+          x: 590604
+          y: 4140313
+        }
+        length: 30
+      }
+    }
+    length: 30
+    virtual: true
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  right_boundary {
+    curve {
+      segment {
+        line_segment {
+          point {
+            x: 590604
+            y: 4140315
+          }
+          point {
+            x: 590574
+            y: 4140315
+          }
+        }
+        s: 0
+        start_position {
+          x: 590604
+          y: 4140315
+        }
+        length: 30
+      }
+    }
+    length: 30
+    virtual: true
+    boundary_type {
+      s: 0
+      types: DOTTED_WHITE
+    }
+  }
+  length: 30
+  speed_limit: 5
+  overlap_id {
+    id: "overlap_2"
+  }
+  predecessor_id: {
+    id: "2dap0_2_1"
+  }
+  type: CITY_DRIVING
+  turn: NO_TURN
+  left_sample {
+    s: 0
+    width: 1.75889
+  }
+  left_sample {
+    s: 30
+    width: 1.75882
+  }
+  right_sample {
+    s: 0
+    width: 1.75889
+  }
+  right_sample {
+    s: 30
+    width: 1.75882
+  }
+  direction: FORWARD
+  left_road_sample {
+    s: 0
+    width: 3.6225
+  }
+  left_road_sample {
+    s: 0.30
+    width: 1.75882
+  }
+  right_road_sample {
+    s: 0
+    width: 4.13493
+  }
+  right_road_sample {
+    s: 0.199321
+    width: 30
+  }
+}
+overlap {
+  id {
+    id: "overlap_2"
+  }
+  object {
+    id {
+      id: "2dap0_2_2"
+    }
+    lane_overlap_info {
+      start_s: 0
+      end_s: 0.1
+      is_merge: false
+    }
+  }
+  object {
+    id {
+      id: "2506"
+    }
+    signal_overlap_info {
+    }
+  }
+}
