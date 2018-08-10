@@ -12,7 +12,7 @@ class ImageConverter
 	image_transport::ImageTransport it_;
 	image_transport::Subscriber image_sub_;
 	image_transport::Publisher image_pub_front_, image_pub_short_, image_pub_long_;
-	ros::Subscriber compressed_sub_;
+	ros::Subscriber compressed_sub_, long_focus_sub_;
 
 public:
 	ImageConverter()
@@ -23,6 +23,7 @@ public:
 		image_pub_short_ = it_.advertise("/apollo/sensor/camera/traffic/image_short", 1);
 		image_pub_long_ = it_.advertise("/apollo/sensor/camera/traffic/image_long", 1);				
 		compressed_sub_ = nh_.subscribe("/simulator/camera_node/image/compressed", 1, &ImageConverter::CompressedImageCallback, this);
+		long_focus_sub_ = nh_.subscribe("/simulator/camera_node/long_focus/compressed", 1, &ImageConverter::LongFocusCallback, this);
 	}
 
 	~ImageConverter(){}
@@ -41,7 +42,26 @@ public:
 		cv::Mat image = cv::imdecode(cv::Mat(msg->data),1);
 
 		sensor_msgs::Image raw_yuyv_msg;
+		raw_yuyv_msg = ConvertRgbToYuyv(image);
 		raw_yuyv_msg.header = msg->header;
+		
+		image_pub_front_.publish(raw_yuyv_msg);
+		image_pub_short_.publish(raw_yuyv_msg);
+	}
+
+	void LongFocusCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
+		cv::Mat image = cv::imdecode(cv::Mat(msg->data),1);
+
+		sensor_msgs::Image raw_yuyv_msg;
+		raw_yuyv_msg = ConvertRgbToYuyv(image);
+		raw_yuyv_msg.header = msg->header;
+
+		image_pub_long_.publish(raw_yuyv_msg);
+	}
+
+	sensor_msgs::Image ConvertRgbToYuyv(const cv::Mat image) {
+		sensor_msgs::Image raw_yuyv_msg;
+		
 		raw_yuyv_msg.height = image.rows;
 		raw_yuyv_msg.width = image.cols;
 		raw_yuyv_msg.step = image.cols*image.channels();
@@ -79,9 +99,8 @@ public:
 
 			}
 		}
-		image_pub_front_.publish(raw_yuyv_msg);
-		image_pub_short_.publish(raw_yuyv_msg);
-		image_pub_long_.publish(raw_yuyv_msg);
+
+		return raw_yuyv_msg;
 	}
 
 	void ImageCallback(const sensor_msgs::ImageConstPtr &msg){
