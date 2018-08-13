@@ -43,6 +43,7 @@ import string
 from base64 import standard_b64encode, standard_b64decode
 
 from rosbridge_library.util import string_types, bson
+from rosbridge_library.internal.exceptions import MissingDescriptorException
 
 import sys
 if sys.version_info >= (3, 0):
@@ -279,6 +280,9 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     #    inst.stamp = rospy.get_rostime()
     
     if roottype.startswith('pb_msgs'):
+        if not hasattr(inst, 'DESCRIPTOR'):
+            raise MissingDescriptorException(rostype, roottype)
+        
         fields = inst.DESCRIPTOR.fields
         slots = [field.name for field in fields]
         slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in fields]

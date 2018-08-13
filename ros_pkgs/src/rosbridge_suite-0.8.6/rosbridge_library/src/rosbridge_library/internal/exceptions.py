@@ -35,3 +35,9 @@ class InvalidArgumentException(Exception):
 
 class MissingArgumentException(Exception):
     pass
+
+class MissingDescriptorException(Exception):
+    def __init__(self, rostype, roottype):
+        Exception.__init__(self,
+        ("Protobuf message doesn't have a DESCRIPTOR field with" +
+        " rostype %s and roottype %s") % (rostype, roottype))
