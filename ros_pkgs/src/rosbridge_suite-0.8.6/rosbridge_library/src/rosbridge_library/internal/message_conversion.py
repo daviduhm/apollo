@@ -83,6 +83,7 @@ ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
 binary_encoder = None
+PB_NAMESPACE = "pb_msgs"
 
 def get_encoder():
     global binary_encoder
@@ -318,7 +319,7 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
 
 
 def _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack):
-    field_inst = ros_loader.get_message_instance('pb_msgs/' + rostype)
+    field_inst = ros_loader.get_message_instance("{}/{}".format(PB_NAMESPACE, rostype))
     for x in msg:
         sub_inst = _to_object_inst(x, rostype, roottype, field_inst, stack)
         inst.extend([sub_inst])
@@ -326,5 +327,5 @@ def _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack):
     return inst
 
 
-def is_protobuf_msg(roottype):
-    return roottype and roottype.startswith('pb_msgs')
+def is_protobuf_msg(msg_type):
+    return msg_type and msg_type.startswith(PB_NAMESPACE)
