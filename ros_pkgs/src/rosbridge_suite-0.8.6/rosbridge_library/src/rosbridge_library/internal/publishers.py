@@ -166,7 +166,7 @@ class MultiPublisher():
         self.clients = {}
         self.latched_client_id = latched_client_id
         self.topic = topic
-        self.topic_type = topic_type
+        self.msg_type = msg_type  # Needed for supporting pb_msgs
         self.msg_class = msg_class
         self.publisher = Publisher(topic, msg_class, latch=(latched_client_id!=None), queue_size=queue_size)
         self.listener = PublisherConsistencyListener()
@@ -214,7 +214,7 @@ class MultiPublisher():
         inst = self.msg_class()
 
         # Populate the instance, propagating any exceptions that may be thrown
-        message_conversion.populate_instance(msg, inst, self.topic_type)
+        message_conversion.populate_instance(msg, inst, self.msg_type)
 
         # Publish the message
         self.publisher.publish(inst)
