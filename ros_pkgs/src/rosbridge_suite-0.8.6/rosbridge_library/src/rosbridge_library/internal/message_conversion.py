@@ -76,7 +76,7 @@ ros_time_types = ["time", "duration"]
 ros_primitive_types = ["bool", "byte", "char", "int8", "uint8", "int16",
                        "uint16", "int32", "uint32", "int64", "uint64",
                        "float32", "float64", "string"]
-ros_header_types = ["std_msgs/Header", "roslib/Header"]
+ros_header_types = ["Header", "std_msgs/Header", "roslib/Header"]
 ros_binary_types = ["uint8[]", "char[]"]
 list_braces = re.compile(r'\[[^\]]*\]')
 ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
@@ -201,9 +201,11 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     if inst is not None and type(inst) in list_types:
         return _to_list_inst(msg, rostype, roottype, inst, stack)
     
-    # Check whether we're dealing with RepeatedCompositeContainer protobuf type
-    if is_protobuf_msg(roottype) and isinstance(msg, list):
-        return _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack)
+    # Check whether we're dealing with protobuf type
+    if is_protobuf_msg(roottype):
+        if isinstance(msg, list):  # RepeatedCompositeContainer
+            return _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack)
+        return _to_protobuf_object_inst(msg, rostype, roottype, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
@@ -284,16 +286,7 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
     # if rostype in ros_header_types:
     #     inst.stamp = rospy.get_rostime()
     
-    if is_protobuf_msg(roottype):
-        if not hasattr(inst, 'DESCRIPTOR'):
-            raise MissingDescriptorException(rostype, roottype)
-        
-        fields = inst.DESCRIPTOR.fields
-        slots = [field.name for field in fields]
-        slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in fields]
-        inst_fields = dict(zip(slots, slot_types))
-    else:
-        inst_fields = dict(zip(inst.__slots__, inst._slot_types))
+    inst_fields = dict(zip(inst.__slots__, inst._slot_types))
     
     for field_name in msg:
         # Add this field to the field stack
@@ -309,11 +302,37 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         field_value = _to_inst(msg[field_name], field_rostype,
                     roottype, field_inst, field_stack)
     
-        # Can't set composite field if it's a protobuf msg
-        if is_protobuf_msg(roottype) and field_rostype not in ros_primitive_types:
-            continue
-
         setattr(inst, field_name, field_value)
+
+    return inst
+
+
+def _to_protobuf_object_inst(msg, rostype, roottype, inst, stack):
+    if type(msg) is not dict:
+        raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
+
+    if not hasattr(inst, 'DESCRIPTOR'):
+        raise MissingDescriptorException(rostype, roottype)
+    
+    fields = inst.DESCRIPTOR.fields
+    slots = [field.name for field in fields]
+    slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in fields]
+    inst_fields = dict(zip(slots, slot_types))
+
+    for field_name in msg:
+        field_stack = stack + [field_name]
+
+        if not field_name in inst_fields:
+            raise NonexistentFieldException(roottype, field_stack)
+
+        field_rostype = inst_fields[field_name]
+        field_inst = getattr(inst, field_name)
+
+        field_value = _to_inst(msg[field_name], field_rostype,
+                    roottype, field_inst, field_stack)
+        
+        if field_rostype in ros_primitive_types:
+            setattr(inst, field_name, field_value)
 
     return inst
 
@@ -324,7 +343,7 @@ def _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack):
     
     field_inst = ros_loader.get_message_instance("{}/{}".format(PB_NAMESPACE, rostype))
     for x in msg:
-        sub_inst = _to_object_inst(x, rostype, roottype, field_inst, stack)
+        sub_inst = _to_inst(x, rostype, roottype, field_inst, stack)
         inst.extend([sub_inst])
     
     return inst
