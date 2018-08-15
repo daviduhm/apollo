@@ -202,7 +202,7 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
         return _to_list_inst(msg, rostype, roottype, inst, stack)
     
     # Check whether we're dealing with RepeatedCompositeContainer protobuf type
-    if is_protobuf_msg(roottype) and type(msg) is list:
+    if is_protobuf_msg(roottype) and isinstance(msg, list):
         return _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
@@ -319,6 +319,9 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
 
 
 def _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack):
+    if len(msg) == 0:
+        return inst
+    
     field_inst = ros_loader.get_message_instance("{}/{}".format(PB_NAMESPACE, rostype))
     for x in msg:
         sub_inst = _to_object_inst(x, rostype, roottype, field_inst, stack)
