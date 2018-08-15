@@ -199,6 +199,10 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     # Check whether we're dealing with a list type
     if inst is not None and type(inst) in list_types:
         return _to_list_inst(msg, rostype, roottype, inst, stack)
+    
+    # Check whether we're dealing with RepeatedCompositeContainer protobuf type
+    if is_protobuf_msg(roottype) and type(msg) is list:
+        return _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack)
 
     # Otherwise, the type has to be a full ros msg type, so msg must be a dict
     if inst is None:
@@ -276,10 +280,10 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
 
     # Substitute the correct time if we're an std_msgs/Header
-    #if rostype in ros_header_types:
-    #    inst.stamp = rospy.get_rostime()
+    # if rostype in ros_header_types:
+    #     inst.stamp = rospy.get_rostime()
     
-    if roottype.startswith('pb_msgs'):
+    if is_protobuf_msg(roottype):
         if not hasattr(inst, 'DESCRIPTOR'):
             raise MissingDescriptorException(rostype, roottype)
         
@@ -304,9 +308,23 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
         field_value = _to_inst(msg[field_name], field_rostype,
                     roottype, field_inst, field_stack)
     
-        if roottype.startswith('pb_msgs') and field_rostype not in ros_primitive_types:
+        # Can't set composite field if it's a protobuf msg
+        if is_protobuf_msg(roottype) and field_rostype not in ros_primitive_types:
             continue
 
         setattr(inst, field_name, field_value)
 
     return inst
+
+
+def _to_protobuf_repeated_inst(msg, rostype, roottype, inst, stack):
+    field_inst = ros_loader.get_message_instance('pb_msgs/' + rostype)
+    for x in msg:
+        sub_inst = _to_object_inst(x, rostype, roottype, field_inst, stack)
+        inst.extend([sub_inst])
+    
+    return inst
+
+
+def is_protobuf_msg(roottype):
+    return roottype and roottype.startswith('pb_msgs')
