@@ -43,7 +43,7 @@ import string
 from base64 import standard_b64encode, standard_b64decode
 
 from rosbridge_library.util import string_types, bson
-from rosbridge_library.internal.exceptions import MissingDescriptorException
+from rosbridge_library.internal.exceptions import MissingProtobufDescriptorException, InvalidProtobufFieldException
 
 import sys
 if sys.version_info >= (3, 0):
@@ -83,7 +83,30 @@ ros_binary_types_list_braces = [("uint8[]", re.compile(r'uint8\[[^\]]*\]')),
                                 ("char[]", re.compile(r'char\[[^\]]*\]'))]
 
 binary_encoder = None
+
 PB_NAMESPACE = "pb_msgs"
+
+pb_msg_type_map = [
+    "unknown",  # TODO: Haven't seen this type
+    "float64",  # double
+    "float32",  # float
+    "int64",
+    "uint64",
+    "int32",
+    "uint64",  # fixed64
+    "uint32",  # fixed32
+    "bool",
+    "string",
+    "group",  # TODO: Haven't seen this type
+    "message",  # pb msg object
+    "string",  # bytes
+    "uint32",
+    "int8",  # enum
+    "int32",  # sfixed32
+    "int64",  # sfixed64
+    "int32",  # sint32
+    "int64"  # sint64
+]
 
 def get_encoder():
     global binary_encoder
@@ -121,7 +144,7 @@ class FieldTypeMismatchException(Exception):
 def extract_values(inst):
     rostype = getattr(inst, "_type", None)
     if rostype is None:
-        raise InvalidMessageException()
+        raise InvalidMessageException(inst)
     return _from_inst(inst, rostype)
 
 
@@ -188,7 +211,7 @@ def _to_inst(msg, rostype, roottype, inst=None, stack=[]):
     for binary_type, expression in ros_binary_types_list_braces:
         if expression.sub(binary_type, rostype) in ros_binary_types:
             return _to_binary_inst(msg)
-
+    
     # Check the type for time or rostime
     if rostype in ros_time_types:
         return _to_time_inst(msg, rostype, inst)
@@ -310,15 +333,29 @@ def _to_object_inst(msg, rostype, roottype, inst, stack):
 def _to_protobuf_object_inst(msg, rostype, roottype, inst, stack):
     if type(msg) is not dict:
         raise FieldTypeMismatchException(roottype, stack, rostype, type(msg))
-
+    
     if not hasattr(inst, 'DESCRIPTOR'):
-        raise MissingDescriptorException(rostype, roottype)
+        raise MissingProtobufDescriptorException(rostype, roottype)
     
     fields = inst.DESCRIPTOR.fields
-    slots = [field.name for field in fields]
-    slot_types = [field.message_type.name if field.message_type else type_map.get(type(msg[field.name]).__name__, [''])[0] for field in fields]
+    slots, slot_types = [], []
+    for field in fields:
+        if not hasattr(field, 'name') or not hasattr(field, 'type'):
+            raise InvalidProtobufFieldException(rostype, roottype)
+        
+        if not isinstance(field.type, int) or field.type < 0 or field.type >= len(pb_msg_type_map):
+            raise InvalidProtobufFieldException(rostype, roottype)
+        
+        if field.type == 11:  # Protobuf message type
+            slot_type = field.message_type.name
+        else:
+            slot_type = pb_msg_type_map[field.type]
+        
+        slots.append(field.name)
+        slot_types.append(slot_type)
+    
     inst_fields = dict(zip(slots, slot_types))
-
+    
     for field_name in msg:
         field_stack = stack + [field_name]
 
