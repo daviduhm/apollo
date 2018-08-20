@@ -178,7 +178,6 @@ def _load_class(modname, subname, classname):
 
     Returns the loaded module, or None on failure """
     global loaded_modules
-
     try:
         with _manifest_lock:
             # roslib maintains a cache of loaded manifests, so no need to duplicate

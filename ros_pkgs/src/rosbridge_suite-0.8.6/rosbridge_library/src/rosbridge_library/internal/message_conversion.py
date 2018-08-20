@@ -144,7 +144,8 @@ class FieldTypeMismatchException(Exception):
 def extract_values(inst):
     rostype = getattr(inst, "_type", None)
     if rostype is None:
-        raise InvalidMessageException(inst)
+        return _from_pb(inst)
+    #    raise InvalidMessageException(inst)
     return _from_inst(inst, rostype)
 
 
@@ -169,6 +170,7 @@ def _from_inst(inst, rostype):
     if rostype in ros_primitive_types:
         #JSON does not support Inf and NaN. They are mapped to None and encoded as null.
         if rostype in ["float32", "float64"]:
+            #print(inst, type(inst))
             if math.isnan(inst) or math.isinf(inst):
                 return None
         return inst
@@ -196,6 +198,22 @@ def _from_list_inst(inst, rostype):
     # Call to _to_inst for every element of the list
     return [_from_inst(x, rostype) for x in inst]
 
+
+def _from_pb(inst):
+    msg = {}
+    for field in inst.DESCRIPTOR.fields:
+        field_name = field.name
+        field_inst = getattr(inst, field_name)
+        pbtype = field.type
+        if pbtype == 11:
+            msg[field_name] = _from_pb(field_inst)
+        else:
+            #print(field_name, pbtype)
+            if pbtype == 1 and type(field_inst) != float:
+                continue
+            field_rostype = pb_msg_type_map[pbtype]
+            msg[field_name] = _from_inst(field_inst, field_rostype)
+    return msg
 
 def _from_object_inst(inst, rostype):
     # Create an empty dict then populate with values from the inst
