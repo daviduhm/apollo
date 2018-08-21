@@ -52,7 +52,7 @@ class RosbridgeWebSocket(WebSocketHandler):
     fragment_timeout = 600                  # seconds
     # protocol.py:
     delay_between_messages = 0              # seconds
-    max_message_size = None                 # bytes
+    max_message_size = 128 * 1024 * 1024    # bytes
     bson_only_mode = False
 
     def open(self):

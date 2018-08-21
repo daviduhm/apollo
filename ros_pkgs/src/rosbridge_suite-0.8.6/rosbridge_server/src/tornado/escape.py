@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright 2009 Facebook
 #
@@ -20,34 +19,28 @@ Also includes a few other miscellaneous string manipulation functions that
 have crept in over time.
 """
 
-from __future__ import absolute_import, division, print_function, with_statement
-
-import re
-import sys
-
-from tornado.util import bytes_type, unicode_type, basestring_type, u
-
-try:
-    from urllib.parse import parse_qs as _parse_qs  # py3
-except ImportError:
-    from urlparse import parse_qs as _parse_qs  # Python 2.6+
-
-try:
-    import htmlentitydefs  # py2
-except ImportError:
-    import html.entities as htmlentitydefs  # py3
-
-try:
-    import urllib.parse as urllib_parse  # py3
-except ImportError:
-    import urllib as urllib_parse  # py2
+from __future__ import absolute_import, division, print_function
 
 import json
+import re
+
+from tornado.util import PY3, unicode_type, basestring_type
+
+if PY3:
+    from urllib.parse import parse_qs as _parse_qs
+    import html.entities as htmlentitydefs
+    import urllib.parse as urllib_parse
+    unichr = chr
+else:
+    from urlparse import parse_qs as _parse_qs
+    import htmlentitydefs
+    import urllib as urllib_parse
 
 try:
-    unichr
-except NameError:
-    unichr = chr
+    import typing  # noqa
+except ImportError:
+    pass
+
 
 _XHTML_ESCAPE_RE = re.compile('[&<>"\']')
 _XHTML_ESCAPE_DICT = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
@@ -82,7 +75,7 @@ def json_encode(value):
     # JSON permits but does not require forward slashes to be escaped.
     # This is useful when json data is emitted in a <script> tag
     # in HTML, as it prevents </script> tags from prematurely terminating
-    # the javscript.  Some json libraries do this escaping by default,
+    # the javascript.  Some json libraries do this escaping by default,
     # although python's standard library does not, so we do it here.
     # http://stackoverflow.com/questions/1580647/json-why-are-forward-slashes-escaped
     return json.dumps(value).replace("</", "<\\/")
@@ -116,7 +109,7 @@ def url_escape(value, plus=True):
 # python 3 changed things around enough that we need two separate
 # implementations of url_unescape.  We also need our own implementation
 # of parse_qs since python 3's version insists on decoding everything.
-if sys.version_info[0] < 3:
+if not PY3:
     def url_unescape(value, encoding='utf-8', plus=True):
         """Decodes the given value from a URL.
 
@@ -187,10 +180,11 @@ else:
         return encoded
 
 
-_UTF8_TYPES = (bytes_type, type(None))
+_UTF8_TYPES = (bytes, type(None))
 
 
 def utf8(value):
+    # type: (typing.Union[bytes,unicode_type,None])->typing.Union[bytes,None]
     """Converts a string argument to a byte string.
 
     If the argument is already a byte string or None, it is returned unchanged.
@@ -204,6 +198,7 @@ def utf8(value):
         )
     return value.encode("utf-8")
 
+
 _TO_UNICODE_TYPES = (unicode_type, type(None))
 
 
@@ -215,11 +210,12 @@ def to_unicode(value):
     """
     if isinstance(value, _TO_UNICODE_TYPES):
         return value
-    if not isinstance(value, bytes_type):
+    if not isinstance(value, bytes):
         raise TypeError(
             "Expected bytes, unicode, or None; got %r" % type(value)
         )
     return value.decode("utf-8")
+
 
 # to_unicode was previously named _unicode not because it was private,
 # but to avoid conflicts with the built-in unicode() function/type
@@ -246,7 +242,7 @@ def to_basestring(value):
     """
     if isinstance(value, _BASESTRING_TYPES):
         return value
-    if not isinstance(value, bytes_type):
+    if not isinstance(value, bytes):
         raise TypeError(
             "Expected bytes, unicode, or None; got %r" % type(value)
         )
@@ -264,10 +260,11 @@ def recursive_unicode(obj):
         return list(recursive_unicode(i) for i in obj)
     elif isinstance(obj, tuple):
         return tuple(recursive_unicode(i) for i in obj)
-    elif isinstance(obj, bytes_type):
+    elif isinstance(obj, bytes):
         return to_unicode(obj)
     else:
         return obj
+
 
 # I originally used the regex from
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
@@ -276,7 +273,9 @@ def recursive_unicode(obj):
 # This regex should avoid those problems.
 # Use to_unicode instead of tornado.util.u - we don't want backslashes getting
 # processed as escapes.
-_URL_RE = re.compile(to_unicode(r"""\b((?:([\w-]+):(/{1,3})|www[.])(?:(?:(?:[^\s&()]|&amp;|&quot;)*(?:[^!"#$%&'()*+,.:;<=>?@\[\]^`{|}~\s]))|(?:\((?:[^\s&()]|&amp;|&quot;)*\)))+)"""))
+_URL_RE = re.compile(to_unicode(
+    r"""\b((?:([\w-]+):(/{1,3})|www[.])(?:(?:(?:[^\s&()]|&amp;|&quot;)*(?:[^!"#$%&'()*+,.:;<=>?@\[\]^`{|}~\s]))|(?:\((?:[^\s&()]|&amp;|&quot;)*\)))+)"""  # noqa: E501
+))
 
 
 def linkify(text, shorten=False, extra_params="",
@@ -291,24 +290,24 @@ def linkify(text, shorten=False, extra_params="",
     * ``shorten``: Long urls will be shortened for display.
 
     * ``extra_params``: Extra text to include in the link tag, or a callable
-        taking the link as an argument and returning the extra text
-        e.g. ``linkify(text, extra_params='rel="nofollow" class="external"')``,
-        or::
+      taking the link as an argument and returning the extra text
+      e.g. ``linkify(text, extra_params='rel="nofollow" class="external"')``,
+      or::
 
-            def extra_params_cb(url):
-                if url.startswith("http://example.com"):
-                    return 'class="internal"'
-                else:
-                    return 'class="external" rel="nofollow"'
-            linkify(text, extra_params=extra_params_cb)
+          def extra_params_cb(url):
+              if url.startswith("http://example.com"):
+                  return 'class="internal"'
+              else:
+                  return 'class="external" rel="nofollow"'
+          linkify(text, extra_params=extra_params_cb)
 
     * ``require_protocol``: Only linkify urls which include a protocol. If
-        this is False, urls such as www.facebook.com will also be linkified.
+      this is False, urls such as www.facebook.com will also be linkified.
 
     * ``permitted_protocols``: List (or set) of protocols which should be
-        linkified, e.g. ``linkify(text, permitted_protocols=["http", "ftp",
-        "mailto"])``. It is very unsafe to include protocols such as
-        ``javascript``.
+      linkified, e.g. ``linkify(text, permitted_protocols=["http", "ftp",
+      "mailto"])``. It is very unsafe to include protocols such as
+      ``javascript``.
     """
     if extra_params and not callable(extra_params):
         extra_params = " " + extra_params.strip()
@@ -366,7 +365,7 @@ def linkify(text, shorten=False, extra_params="",
                     # have a status bar, such as Safari by default)
                     params += ' title="%s"' % href
 
-        return u('<a href="%s"%s>%s</a>') % (href, params, url)
+        return u'<a href="%s"%s>%s</a>' % (href, params, url)
 
     # First HTML-escape so that our strings are all safe.
     # The regex is modified to avoid character entites other than &amp; so
@@ -378,7 +377,10 @@ def linkify(text, shorten=False, extra_params="",
 def _convert_entity(m):
     if m.group(1) == "#":
         try:
-            return unichr(int(m.group(2)))
+            if m.group(2)[:1].lower() == 'x':
+                return unichr(int(m.group(2)[1:], 16))
+            else:
+                return unichr(int(m.group(2)))
         except ValueError:
             return "&#%s;" % m.group(2)
     try:
@@ -392,5 +394,6 @@ def _build_unicode_map():
     for name, value in htmlentitydefs.name2codepoint.items():
         unicode_map[name] = unichr(value)
     return unicode_map
+
 
 _HTML_UNICODE_MAP = _build_unicode_map()

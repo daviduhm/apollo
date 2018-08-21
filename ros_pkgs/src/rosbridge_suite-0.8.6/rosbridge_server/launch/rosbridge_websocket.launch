@@ -9,7 +9,7 @@
 
   <arg name="fragment_timeout" default="600" />
   <arg name="delay_between_messages" default="0" />
-  <arg name="max_message_size" default="None" />
+  <arg name="max_message_size" default="134217728" />
 
   <arg name="authenticate" default="false" />
 

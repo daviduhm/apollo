@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # Copyright 2009 Facebook
 #
@@ -29,10 +28,12 @@ provides WSGI support in two ways:
   and Tornado handlers in a single server.
 """
 
-from __future__ import absolute_import, division, print_function, with_statement
+from __future__ import absolute_import, division, print_function
 
 import sys
+from io import BytesIO
 import tornado
+import warnings
 
 from tornado.concurrent import Future
 from tornado import escape
@@ -40,16 +41,12 @@ from tornado import httputil
 from tornado.log import access_log
 from tornado import web
 from tornado.escape import native_str
-from tornado.util import bytes_type, unicode_type
+from tornado.util import unicode_type, PY3
 
-try:
-    from io import BytesIO  # python 3
-except ImportError:
-    from cStringIO import StringIO as BytesIO  # python 2
 
-try:
+if PY3:
     import urllib.parse as urllib_parse  # py3
-except ImportError:
+else:
     import urllib as urllib_parse
 
 # PEP 3333 specifies that WSGI on python 3 generally deals with byte strings
@@ -58,7 +55,7 @@ except ImportError:
 # here to minimize the temptation to use them in non-wsgi contexts.
 if str is unicode_type:
     def to_wsgi_str(s):
-        assert isinstance(s, bytes_type)
+        assert isinstance(s, bytes)
         return s.decode('latin1')
 
     def from_wsgi_str(s):
@@ -66,7 +63,7 @@ if str is unicode_type:
         return s.encode('latin1')
 else:
     def to_wsgi_str(s):
-        assert isinstance(s, bytes_type)
+        assert isinstance(s, bytes)
         return s
 
     def from_wsgi_str(s):
@@ -80,6 +77,7 @@ class WSGIApplication(web.Application):
     .. deprecated:: 4.0
 
        Use a regular `.Application` and wrap it in `WSGIAdapter` instead.
+       This class will be removed in Tornado 6.0.
     """
     def __call__(self, environ, start_response):
         return WSGIAdapter(self)(environ, start_response)
@@ -87,8 +85,10 @@ class WSGIApplication(web.Application):
 
 # WSGI has no facilities for flow control, so just return an already-done
 # Future when the interface requires it.
-_dummy_future = Future()
-_dummy_future.set_result(None)
+def _dummy_future():
+    f = Future()
+    f.set_result(None)
+    return f
 
 
 class _WSGIConnection(httputil.HTTPConnection):
@@ -120,7 +120,7 @@ class _WSGIConnection(httputil.HTTPConnection):
             self.write(chunk, callback)
         elif callback is not None:
             callback()
-        return _dummy_future
+        return _dummy_future()
 
     def write(self, chunk, callback=None):
         if self._expected_content_remaining is not None:
@@ -132,7 +132,7 @@ class _WSGIConnection(httputil.HTTPConnection):
         self._write_buffer.append(chunk)
         if callback is not None:
             callback()
-        return _dummy_future
+        return _dummy_future()
 
     def finish(self):
         if (self._expected_content_remaining is not None and
@@ -183,9 +183,25 @@ class WSGIAdapter(object):
     that it is not possible to use `.AsyncHTTPClient`, or the
     `tornado.auth` or `tornado.websocket` modules.
 
+    In multithreaded WSGI servers on Python 3, it may be necessary to
+    permit `asyncio` to create event loops on any thread. Run the
+    following at startup (typically import time for WSGI
+    applications)::
+
+        import asyncio
+        from tornado.platform.asyncio import AnyThreadEventLoopPolicy
+        asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
+
     .. versionadded:: 4.0
+
+    .. deprecated:: 5.1
+
+       This class is deprecated and will be removed in Tornado 6.0.
+       Use Tornado's `.HTTPServer` instead of a WSGI container.
     """
     def __init__(self, application):
+        warnings.warn("WSGIAdapter is deprecated, use Tornado's HTTPServer instead",
+                      DeprecationWarning)
         if isinstance(application, WSGIApplication):
             self.application = lambda request: web.Application.__call__(
                 application, request)
@@ -210,7 +226,7 @@ class WSGIAdapter(object):
             body = environ["wsgi.input"].read(
                 int(headers["Content-Length"]))
         else:
-            body = ""
+            body = b""
         protocol = environ["wsgi.url_scheme"]
         remote_ip = environ.get("REMOTE_ADDR", "")
         if environ.get("HTTP_HOST"):
@@ -256,7 +272,7 @@ class WSGIContainer(object):
         container = tornado.wsgi.WSGIContainer(simple_app)
         http_server = tornado.httpserver.HTTPServer(container)
         http_server.listen(8888)
-        tornado.ioloop.IOLoop.instance().start()
+        tornado.ioloop.IOLoop.current().start()
 
     This class is intended to let other frameworks (Django, web.py, etc)
     run on the Tornado HTTP server and I/O loop.
@@ -287,7 +303,8 @@ class WSGIContainer(object):
         if not data:
             raise Exception("WSGI app did not call start_response")
 
-        status_code = int(data["status"].split()[0])
+        status_code, reason = data["status"].split(' ', 1)
+        status_code = int(status_code)
         headers = data["headers"]
         header_set = set(k.lower() for (k, v) in headers)
         body = escape.utf8(body)
@@ -299,13 +316,12 @@ class WSGIContainer(object):
         if "server" not in header_set:
             headers.append(("Server", "TornadoServer/%s" % tornado.version))
 
-        parts = [escape.utf8("HTTP/1.1 " + data["status"] + "\r\n")]
+        start_line = httputil.ResponseStartLine("HTTP/1.1", status_code, reason)
+        header_obj = httputil.HTTPHeaders()
         for key, value in headers:
-            parts.append(escape.utf8(key) + b": " + escape.utf8(value) + b"\r\n")
-        parts.append(b"\r\n")
-        parts.append(body)
-        request.write(b"".join(parts))
-        request.finish()
+            header_obj.add(key, value)
+        request.connection.write_headers(start_line, header_obj, chunk=body)
+        request.connection.finish()
         self._log(status_code, request)
 
     @staticmethod

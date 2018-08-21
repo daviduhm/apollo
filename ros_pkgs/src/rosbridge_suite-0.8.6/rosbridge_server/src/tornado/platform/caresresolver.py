@@ -1,7 +1,8 @@
-from __future__ import absolute_import, division, print_function, with_statement
-import pycares
+from __future__ import absolute_import, division, print_function
+import pycares  # type: ignore
 import socket
 
+from tornado.concurrent import Future
 from tornado import gen
 from tornado.ioloop import IOLoop
 from tornado.netutil import Resolver, is_valid_ip
@@ -18,9 +19,12 @@ class CaresResolver(Resolver):
     so it is only recommended for use in ``AF_INET`` (i.e. IPv4).  This is
     the default for ``tornado.simple_httpclient``, but other libraries
     may default to ``AF_UNSPEC``.
+
+    .. versionchanged:: 5.0
+       The ``io_loop`` argument (deprecated since version 4.1) has been removed.
     """
-    def initialize(self, io_loop=None):
-        self.io_loop = io_loop or IOLoop.current()
+    def initialize(self):
+        self.io_loop = IOLoop.current()
         self.channel = pycares.Channel(sock_state_cb=self._sock_state_cb)
         self.fds = {}
 
@@ -52,14 +56,13 @@ class CaresResolver(Resolver):
             addresses = [host]
         else:
             # gethostbyname doesn't take callback as a kwarg
-            self.channel.gethostbyname(host, family, (yield gen.Callback(1)))
-            callback_args = yield gen.Wait(1)
-            assert isinstance(callback_args, gen.Arguments)
-            assert not callback_args.kwargs
-            result, error = callback_args.args
+            fut = Future()
+            self.channel.gethostbyname(host, family,
+                                       lambda result, error: fut.set_result((result, error)))
+            result, error = yield fut
             if error:
-                raise Exception('C-Ares returned error %s: %s while resolving %s' %
-                                (error, pycares.errno.strerror(error), host))
+                raise IOError('C-Ares returned error %s: %s while resolving %s' %
+                              (error, pycares.errno.strerror(error), host))
             addresses = result.addresses
         addrinfo = []
         for address in addresses:
@@ -70,7 +73,7 @@ class CaresResolver(Resolver):
             else:
                 address_family = socket.AF_UNSPEC
             if family != socket.AF_UNSPEC and family != address_family:
-                raise Exception('Requested socket family %d but got %d' %
-                                (family, address_family))
+                raise IOError('Requested socket family %d but got %d' %
+                              (family, address_family))
             addrinfo.append((address_family, (address, port)))
         raise gen.Return(addrinfo)

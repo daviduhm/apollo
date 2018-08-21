@@ -54,7 +54,7 @@ def shutdown_hook():
     IOLoop.instance().stop()
 
 if __name__ == "__main__":
-    rospy.init_node("rosbridge_websocket")
+    rospy.init_node("rosbridge_websocket", disable_signals=True)
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
 
     ##################################################
