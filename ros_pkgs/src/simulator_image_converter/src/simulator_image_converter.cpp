@@ -46,6 +46,7 @@ public:
 		raw_yuyv_msg.header = msg->header;
 		
 		image_pub_front_.publish(raw_yuyv_msg);
+		image_pub_short_.publish(raw_yuyv_msg);
 	}
 
 	void LongFocusCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
@@ -56,7 +57,6 @@ public:
 		raw_yuyv_msg.header = msg->header;
 
 		image_pub_long_.publish(raw_yuyv_msg);
-		image_pub_short_.publish(raw_yuyv_msg);
 	}
 
 	sensor_msgs::Image ConvertRgbToYuyv(const cv::Mat image) {
