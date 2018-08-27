@@ -50,12 +50,16 @@ from rosbridge_library.capabilities.advertise_service import AdvertiseService
 from rosbridge_library.capabilities.unadvertise_service import UnadvertiseService
 from rosbridge_library.capabilities.call_service import CallService
 
+global io
+
 def shutdown_hook():
-    IOLoop.instance().stop()
+    io.stop()
 
 if __name__ == "__main__":
     rospy.init_node("rosbridge_websocket", disable_signals=True)
     rospy.on_shutdown(shutdown_hook)    # register shutdown hook to stop the server
+    io = IOLoop.current()
+    RosbridgeWebSocket.io = io
 
     ##################################################
     # Parameter handling                             #
@@ -218,4 +222,4 @@ if __name__ == "__main__":
                           " Retrying in " + str(retry_startup_delay) + "s.")
             rospy.sleep(retry_startup_delay)
 
-    IOLoop.instance().start()
+    io.start()

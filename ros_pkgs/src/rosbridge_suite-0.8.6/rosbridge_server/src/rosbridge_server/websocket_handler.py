@@ -55,6 +55,8 @@ class RosbridgeWebSocket(WebSocketHandler):
     max_message_size = 128 * 1024 * 1024    # bytes
     bson_only_mode = False
 
+    io = None
+
     def open(self):
         cls = self.__class__
         parameters = {
@@ -111,7 +113,7 @@ class RosbridgeWebSocket(WebSocketHandler):
 
     def send_message(self, message):
         binary = type(message)==bson.BSON
-        IOLoop.instance().add_callback(partial(self.write_message, message, binary))
+        RosbridgeWebSocket.io.add_callback(partial(self.write_message, message, binary))
 
     def check_origin(self, origin):
         return True
